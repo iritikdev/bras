@@ -151,7 +151,7 @@ export default async function StudentsPage() {
   // const data = await getData()
 
   return (
-    <div className="container py-10">
+    <div className=" py-10">
       <DataTable columns={columns} data={students} />
     </div>
   )

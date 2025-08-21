@@ -31,7 +31,7 @@ export default function StudentsPage() {
           s.rollNo.toString().includes(search)
       )
     )
-  }, [students,search ]);
+  }, [search ]);
 
   return (
     <div className="py-10">
@@ -49,7 +49,7 @@ export default function StudentsPage() {
           Add Student
         </Button>
       </div>
-      {loading ? "Loading..." : <DataTable columns={columns} data={filtered} />}
+      {loading ? "Loading..." : <DataTable columns={columns} data={students} />}
     </div>
   )
 }

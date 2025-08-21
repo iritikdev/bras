@@ -63,31 +63,24 @@ export const data = {
     },
     {
       title: "Student Management",
-      url: "#",
+      url: "/dashboard/students",
       icon: Users,
-      items: [
-        { title: "Add Student", url: "/dashboard/students" },
-        { title: "View / Edit Students", url: "#" },
-        { title: "Promote Students", url: "#" },
-        { title: "Admissions", url: "#" },
-        { title: "Generate ID Cards", url: "#" },
-      ],
+      items:[]
+        ,
     },
     {
       title: "Staff Management",
-      url: "#",
+      url: "/dashboard/staffs",
       icon: GraduationCap,
       items: [
-        { title: "Add Teacher", url: "#" },
-        { title: "View / Edit Teachers", url: "#" },
-        { title: "Assign Classes & Subjects", url: "#" },
-        { title: "Non-Teaching Staff", url: "#" },
-        { title: "Staff ID Cards", url: "#" },
+        
+        
+
       ],
     },
     {
       title: "Class Management",
-      url: "#",
+      url: "/dasboard/classes",
       icon: BookOpen,
       items: [
         { title: "Manage Classes", url: "#" },
@@ -208,29 +201,11 @@ export const data = {
   ],
 
   navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
+    
   ],
 
   projects: [
-    {
-      name: "School Website",
-      url: "#",
-      icon: Calendar,
-    },
-    {
-      name: "Mobile App",
-      url: "#",
-      icon: Calendar,
-    },
+    
   ],
 }
 

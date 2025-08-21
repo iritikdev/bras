@@ -56,7 +56,7 @@ export const data = {
       icon: SquareTerminal,
       isActive: true,
       items: [
-        { title: "Overview", url: "#" },
+        { title: "Overview", url: "/dashboard" },
         { title: "Upcoming Events", url: "#" },
         { title: "Notifications", url: "#" },
       ],
@@ -66,7 +66,7 @@ export const data = {
       url: "#",
       icon: Users,
       items: [
-        { title: "Add Student", url: "#" },
+        { title: "Add Student", url: "/dashboard/students" },
         { title: "View / Edit Students", url: "#" },
         { title: "Promote Students", url: "#" },
         { title: "Admissions", url: "#" },

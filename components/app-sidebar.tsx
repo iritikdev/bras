@@ -80,7 +80,7 @@ export const data = {
     },
     {
       title: "Class Management",
-      url: "/dasboard/classes",
+      url: "/dasboard/grade",
       icon: BookOpen,
       items: [
         { title: "Manage Classes", url: "#" },

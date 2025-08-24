@@ -4,6 +4,7 @@ import { columns, Student } from './column'
 import { DataTable } from "./data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import Link from 'next/link'
 
 
 export default function StudentsPage() {
@@ -11,7 +12,7 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [filtered, setFiltered] = useState(students)
-  console.log("Students:", students)
+  
   React.useEffect(() => {
     const fetchStudents = async () => {
       const res = await fetch('/api/students');
@@ -31,7 +32,7 @@ export default function StudentsPage() {
           s.rollNo.toString().includes(search)
       )
     )
-  }, [search ]);
+  }, [search]);
 
   return (
     <div className="py-10">
@@ -44,12 +45,12 @@ export default function StudentsPage() {
         />
         <Button
           className="w-full md:w-auto"
-          onClick={() => alert("Add Student functionality goes here")}
+          asChild
         >
-          Add Student
+          <Link href="/dashboard/students/registration">Add Student</Link>
         </Button>
       </div>
-      {loading ? "Loading..." : <DataTable columns={columns} data={students} />}
+      {loading ? "Loading..." : <DataTable columns={columns} data={filtered} />}
     </div>
   )
 }

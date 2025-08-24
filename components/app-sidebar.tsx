@@ -92,7 +92,7 @@ export const data = {
     },
     {
       title: "Attendance Management",
-      url: "#",
+      url: "/dashboard/attendance",
       icon: ClipboardCheck,
       items: [
         { title: "Student Attendance", url: "#" },

@@ -1,6 +1,5 @@
-
- // ✅ Age calculation function
-  const calculateAge = (dob: string) => {
+export function ageCalculator(setAge: React.Dispatch<React.SetStateAction<{ years: number; months: number; days: number; } | null>>) {
+  return (dob: string) => {
     const birthDate = new Date(dob);
     const today = new Date();
 
@@ -17,5 +16,6 @@
       months += 12;
     }
 
-    return({ years, months, days });
+    setAge({ years, months, days });
   };
+}

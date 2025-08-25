@@ -26,88 +26,53 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SchoolHeader from "./SchoolHeader";
 import { Separator } from "./ui/separator";
 import { biharDistricts, grades, relations } from "./data";
-
-// ✅ Zod Schema for Validation
-const studentSchema = z.object({
-  studentName: z.string().min(3, "Student name is required"),
-  fatherName: z.string().min(3, "Father's name is required"),
-  motherName: z.string().min(3, "Mother's name is required"),
-  dob: z.string().nonempty("Date of birth is required"),
-  aadhaar: z.string().regex(/^\d{12}$/, "Aadhaar must be 12 digits"),
-  photo: z.any().refine((file) => file?.length === 1, "Photo is required"),
-  email: z.string().email("Invalid email address"),
-  mobile: z.string().regex(/^\d{10}$/, "Mobile must be 10 digits"),
-  addressLine: z.string().min(5, "Address is required"),
-  city: z.string().min(2, "City is required"),
-  state: z.string().min(2, "State is required"),
-  district: z.enum(biharDistricts),
-  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits"),
-  accountHolder: z.string().min(3, "Account holder name is required"),
-  accountNo: z.string().regex(/^\d{9,18}$/, "Account number is invalid"),
-  ifsc: z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code"),
-  accountOf: z.enum(relations),
-
-  previousSchool: z.string().optional(),
-  previousSchoolAddress: z.string(),
-  lastClass: z.enum(grades),
-  tcNumber: z.string().optional(),
-});
+import { studentSchema } from "./schema";
+import { ageCalculator } from "../lib/ageCalc";
 
 type StudentFormData = z.infer<typeof studentSchema>;
 
 export default function StudentRegistrationForm() {
-  const [age, setAge] = useState<{ years: number; months: number; days: number } | null>(null);
+  const [age, setAge] = useState<{
+    years: number;
+    months: number;
+    days: number;
+  } | null>(null);
 
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
-      studentName: "",
-      fatherName: "",
-      motherName: "",
-      dob: "",
-      aadhaar: "",
-      photo: "",
-      email: "",
-      mobile: "",
-      addressLine: "",
-      city: "",
-      state: "",
-      district: "",
-      pincode: "",
-      accountHolder: "",
-      accountNo: "",
-      ifsc: "",
-      accountOf: "self",
-      previousSchool: "",
-      lastClass: "I",
-      tcNumber: "",
+      studentName: "Ritik Kumar",
+      fatherName: "Amit Kumar",
+      motherName: "Suman Devi",
+      dob: "2000-08-07", // YYYY-MM-DD format
+      aadhaar: "123456789012",
+      photo: "https://dummyimage.com/150x150/000/fff.png&text=Photo",
+      email: "ritik.kumar@example.com",
+      mobile: "9876543210",
+      addressLine: "123, Gandhi Nagar",
+      city: "Patna",
+      state: "Bihar",
+      district: "Patna",
+      pincode: "800001",
+      accountHolder: "Ritik Kumar",
+      accountNo: "123456789012",
+      ifsc: "SBIN0001234",
+      accountOf: "self", // or "father" / "mother"
+      previousSchool: "ABC Public School",
+      lastClass: "I", // Default Roman numeral class
+      tcNumber: "TC2025-001",
     },
   });
 
   // ✅ Age calculation function
-  const calculateAge = (dob: string) => {
-    const birthDate = new Date(dob);
-    const today = new Date();
-
-    let years = today.getFullYear() - birthDate.getFullYear();
-    let months = today.getMonth() - birthDate.getMonth();
-    let days = today.getDate() - birthDate.getDate();
-
-    if (days < 0) {
-      months--;
-      days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-    }
-    if (months < 0) {
-      years--;
-      months += 12;
-    }
-
-    setAge({ years, months, days });
-  };
+  const calculateAge = ageCalculator(setAge);
 
   const onSubmit = (data: StudentFormData) => {
     console.log("Submitted:", data);
     alert("Student registered successfully!");
+  };
+  const onError = (errors: any) => {
+    console.error("❌ Validation Errors:", errors);
   };
 
   return (
@@ -122,8 +87,14 @@ export default function StudentRegistrationForm() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="">
-                <h5 className="mt-10 mb-5 text-2xl font-bold"> Personal Details</h5>
+              <form
+                onSubmit={form.handleSubmit(onSubmit, onError)}
+                className=""
+              >
+                <h5 className="mt-10 mb-5 text-2xl font-bold">
+                  {" "}
+                  Personal Details
+                </h5>
                 <Separator className="mb-6" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* ---------------- Student Name ---------------- */}
@@ -134,7 +105,10 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Student Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter student's name" {...field} />
+                          <Input
+                            placeholder="Enter student's name"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -179,16 +153,21 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Date of Birth</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} onChange={(e) => {
-                            field.onChange(e);
-                            calculateAge(e.target.value);
-                          }} />
+                          <Input
+                            type="date"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              calculateAge(e.target.value);
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                         {/* ✅ Show Calculated Age */}
                         {age && (
                           <p className="text-green-700 text-sm">
-                            Age: <b>{age.years}</b> years, <b>{age.months}</b> months, <b>{age.days}</b> days
+                            Age: <b>{age.years}</b> years, <b>{age.months}</b>{" "}
+                            months, <b>{age.days}</b> days
                           </p>
                         )}
                       </FormItem>
@@ -203,7 +182,11 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Aadhaar</FormLabel>
                         <FormControl>
-                          <Input maxLength={12} placeholder="12-digit Aadhaar" {...field} />
+                          <Input
+                            maxLength={12}
+                            placeholder="12-digit Aadhaar"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -218,9 +201,15 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Photo</FormLabel>
                         <FormControl>
-                          <Input type="file" accept="image/*" onChange={(e) => field.onChange(e.target.files)} />
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => field.onChange(e.target.files)}
+                          />
                         </FormControl>
-                        <FormDescription>Upload a recent passport-size photo</FormDescription>
+                        <FormDescription>
+                          Upload a recent passport-size photo
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -234,7 +223,11 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="Enter email" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="Enter email"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -249,7 +242,10 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Mobile</FormLabel>
                         <FormControl>
-                          <Input placeholder="10-digit mobile number" {...field} />
+                          <Input
+                            placeholder="10-digit mobile number"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -257,10 +253,12 @@ export default function StudentRegistrationForm() {
                   />
                 </div>
 
-                <h5 className="mt-10 mb-5 text-2xl font-bold"> Residential   Details</h5>
+                <h5 className="mt-10 mb-5 text-2xl font-bold">
+                  {" "}
+                  Residential Details
+                </h5>
                 <Separator className="mb-6" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* ---------------- Address ---------------- */}
                   <FormField
                     control={form.control}
@@ -269,7 +267,10 @@ export default function StudentRegistrationForm() {
                       <FormItem className="md:col-span-2">
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="House No, Street, Locality" {...field} />
+                          <Input
+                            placeholder="House No, Street, Locality"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -281,10 +282,14 @@ export default function StudentRegistrationForm() {
                     control={form.control}
                     name="city"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                          <Input placeholder="City" {...field} />
+                          <Input
+                            className="w-full"
+                            placeholder="Enter city"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -296,10 +301,10 @@ export default function StudentRegistrationForm() {
                     control={form.control}
                     name="state"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel>State</FormLabel>
                         <FormControl>
-                          <Input placeholder="State" {...field} />
+                          <Input placeholder="Enter state" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -311,17 +316,23 @@ export default function StudentRegistrationForm() {
                     control={form.control}
                     name="district"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel>District</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl className="w-full">
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select" />
+                              <SelectValue placeholder="Select district" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {biharDistricts.map((district) => <SelectItem value={district}>{district}</SelectItem>)}
-
+                            {biharDistricts.map((district) => (
+                              <SelectItem key={district} value={district}>
+                                {district}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -337,25 +348,60 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Pincode</FormLabel>
                         <FormControl>
-                          <Input maxLength={6} placeholder="6-digit pincode" {...field} />
+                          <Input placeholder="6-digit pincode" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                <h5 className="mt-10 mb-5 text-2xl font-bold"> Bank Account Details</h5>
+                <h5 className="mt-10 mb-5 text-2xl font-bold">
+                  Bank Account Details
+                </h5>
                 <Separator className="mb-6" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* ---------------- Account Holder ---------------- */}
+                  {/* ---------------- Account Of ---------------- */}
+                  <FormField
+                    control={form.control}
+                    name="accountOf"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Account Of</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select relation" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {relations.map((relation) => (
+                              <SelectItem key={relation} value={relation}>
+                                {relation.charAt(0).toUpperCase() +
+                                  relation.slice(1)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* ---------------- Account Holder Name ---------------- */}
                   <FormField
                     control={form.control}
                     name="accountHolder"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Account Holder</FormLabel>
+                        <FormLabel>Account Holder Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Account holder name" {...field} />
+                          <Input
+                            placeholder="Enter account holder's name"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -370,14 +416,17 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>Account Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="Account number" {...field} />
+                          <Input
+                            placeholder="Enter account number"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  {/* ---------------- IFSC ---------------- */}
+                  {/* ---------------- IFSC Code ---------------- */}
                   <FormField
                     control={form.control}
                     name="ifsc"
@@ -385,72 +434,59 @@ export default function StudentRegistrationForm() {
                       <FormItem>
                         <FormLabel>IFSC Code</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. SBIN0001234" {...field} />
+                          <Input placeholder="Enter IFSC code" {...field} />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* ---------------- Account Of ---------------- */}
-                  <FormField
-                    control={form.control}
-                    name="accountOf"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Account Of</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {relations.map((r) => <SelectItem value={r}>{r}</SelectItem>)}
-
-                          </SelectContent>
-                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <h5 className="mt-10 mb-5 text-2xl font-bold"> Previous School Details</h5>
+                <h5 className="mt-10 mb-5 text-2xl font-bold">
+                  Previous School Details
+                </h5>
                 <Separator className="mb-6" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* ---------------- Previous School ---------------- */}
+                  {/* ---------------- Previous School Name ---------------- */}
                   <FormField
                     control={form.control}
                     name="previousSchool"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Previous School</FormLabel>
+                        <FormLabel>Previous School Name (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Previous school name" {...field} />
+                          <Input
+                            placeholder="Enter previous school name"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  {/* ---------------- Last Class ---------------- */}
+                  {/* ---------------- Last Class Attended ---------------- */}
                   <FormField
                     control={form.control}
                     name="lastClass"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Class</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel>Last Class Attended</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select" />
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select class" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {grades.map((g) => <SelectItem value={g}>{g}</SelectItem>)}
-
-
+                            {grades.map((grade) => (
+                              <SelectItem key={grade} value={grade}>
+                                {grade}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -464,9 +500,11 @@ export default function StudentRegistrationForm() {
                     name="tcNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>TC Number</FormLabel>
+                        <FormLabel>
+                          Transfer Certificate No. (Optional)
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Transfer Certificate number" {...field} />
+                          <Input placeholder="Enter TC number" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
